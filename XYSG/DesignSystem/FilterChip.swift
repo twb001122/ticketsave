@@ -14,10 +14,10 @@ struct FilterChip: View {
                 if let count {
                     Text("\(count)")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(isSelected ? Color.black.opacity(0.8) : AppTheme.textSecondary)
+                        .foregroundStyle(isSelected ? AppTheme.onAccentText.opacity(0.8) : AppTheme.textSecondary)
                 }
             }
-            .foregroundStyle(isSelected ? Color.black.opacity(0.85) : AppTheme.textPrimary)
+            .foregroundStyle(isSelected ? AppTheme.onAccentText.opacity(0.85) : AppTheme.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(
@@ -25,7 +25,11 @@ struct FilterChip: View {
                     .fill(isSelected ? AnyShapeStyle(AppTheme.heroGradient) : AnyShapeStyle(.ultraThinMaterial))
                     .overlay {
                         Capsule(style: .continuous)
-                            .fill(Color.white.opacity(isSelected ? 0.04 : 0.03))
+                            .fill(AppTheme.glassFillHighlight.opacity(isSelected ? 1 : 0.7))
+                    }
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .strokeBorder(AppTheme.glassStroke.opacity(isSelected ? 0.0 : 0.45))
                     }
             )
         }

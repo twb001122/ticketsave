@@ -17,14 +17,18 @@ struct GlassSurface: ViewModifier {
                                 LinearGradient(
                                     colors: [
                                         tint.opacity(0.35),
-                                        Color.white.opacity(0.02),
+                                        AppTheme.glassFillHighlight,
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
                     }
-                    .shadow(color: AppTheme.sunOrange.opacity(0.08), radius: 24, y: 8)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .strokeBorder(AppTheme.glassStroke)
+                    }
+                    .shadow(color: AppTheme.glowShadow, radius: 24, y: 8)
             )
     }
 }

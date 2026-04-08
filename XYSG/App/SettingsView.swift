@@ -2,6 +2,8 @@ import SwiftUI
 import XYSGCore
 
 struct SettingsView: View {
+    @AppStorage(AppAppearance.storageKey) private var themePreferenceRawValue = ThemePreference.system.rawValue
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -11,6 +13,7 @@ struct SettingsView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
                         hero
+                        appearanceSection
                         destinationsSection
                     }
                     .padding(.horizontal, 20)
@@ -64,6 +67,96 @@ struct SettingsView: View {
             }
         }
     }
+
+    private var appearanceSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionHeader(eyebrow: "Appearance", title: "外观")
+
+            HStack(spacing: 12) {
+                ForEach(ThemePreference.allCases) { preference in
+                    Button {
+                        themePreferenceRawValue = preference.rawValue
+                        Haptics.selection()
+                    } label: {
+                        ThemePreferenceCard(
+                            preference: preference,
+                            isSelected: themePreference == preference
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            Text(themePreference.subtitle)
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.textSecondary)
+        }
+    }
+
+    private var themePreference: ThemePreference {
+        ThemePreference(rawValue: themePreferenceRawValue) ?? .system
+    }
+}
+
+private struct ThemePreferenceCard: View {
+    let preference: ThemePreference
+    let isSelected: Bool
+
+    private var accent: Color {
+        switch preference {
+        case .system:
+            AppTheme.amethyst
+        case .light:
+            AppTheme.emberOrange
+        case .dark:
+            AppTheme.skyGlow
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(isSelected ? accent.opacity(0.24) : AppTheme.surfaceBright.opacity(0.12))
+
+                Image(systemName: preference.systemImage)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(isSelected ? accent : AppTheme.textSecondary)
+            }
+            .frame(width: 44, height: 44)
+
+            Text(preference.title)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(isSelected ? AppTheme.textPrimary : AppTheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(isSelected ? accent.opacity(0.34) : AppTheme.glassStroke.opacity(0.55))
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    isSelected ? accent.opacity(0.18) : AppTheme.glassFillHighlight.opacity(0.4),
+                                    Color.clear,
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+        )
+        .shadow(color: isSelected ? accent.opacity(0.12) : AppTheme.glowShadow.opacity(0.04), radius: 14, y: 8)
+    }
 }
 
 private struct SettingsEntryCard: View {
@@ -89,7 +182,7 @@ private struct SettingsEntryCard: View {
                                 LinearGradient(
                                     colors: [
                                         accent.opacity(0.26),
-                                        Color.white.opacity(0.03),
+                                        AppTheme.glassFillHighlight.opacity(0.7),
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing

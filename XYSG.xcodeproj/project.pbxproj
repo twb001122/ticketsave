@@ -24,6 +24,7 @@
 		59AB8043FE2E394BF10F6DED /* ComposerDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC57B9881DFFBC92FC649F5 /* ComposerDraft.swift */; };
 		6DD9C89326CABC820A9CCA71 /* BackupArchiveMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A480DF06E46D793BF4C22CA2 /* BackupArchiveMapper.swift */; };
 		701A50C49FE1F82560064969 /* EntityManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83CFAA649C549B364D40BE4 /* EntityManagementView.swift */; };
+		763175A6D7C595B1B2F63909 /* AppAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30E71A4C85CF9765F5DFFEFC /* AppAppearance.swift */; };
 		76A2B72A56D0DEC1DA6C15FF /* ProductionBrand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178B765CBE53864D2C916F1A /* ProductionBrand.swift */; };
 		7D7378B4D9B2214CBCD58B41 /* GlassSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB8606248245E6726305D7CE /* GlassSurface.swift */; };
 		7E4F011DE59F253C20BFA32E /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CC3E91560A57CB8451DBABA /* AppTheme.swift */; };
@@ -54,6 +55,7 @@
 		199F73EF275496FABB59999C /* LocalBackupArchiveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalBackupArchiveService.swift; sourceTree = "<group>"; };
 		1E07422E9CAE1098EEA1DF49 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		273AC7E8A04C2007F698AACE /* EntityCatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityCatalogService.swift; sourceTree = "<group>"; };
+		30E71A4C85CF9765F5DFFEFC /* AppAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAppearance.swift; sourceTree = "<group>"; };
 		37450A06D2064D8484003911 /* ShowUpsertService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowUpsertService.swift; sourceTree = "<group>"; };
 		381860B23CCFAA3CCD26C666 /* CoverAssetRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverAssetRepository.swift; sourceTree = "<group>"; };
 		3C714760BAE8C2CB3038526E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 		6894AC6231DB8B48B3373D02 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				30E71A4C85CF9765F5DFFEFC /* AppAppearance.swift */,
 				D792861611DAC3ED4B34F0C6 /* LaunchExperienceView.swift */,
 				CD92C349A6C02AA4A6EA61AF /* RootTabView.swift */,
 				3C714760BAE8C2CB3038526E /* SettingsView.swift */,
@@ -336,6 +339,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				763175A6D7C595B1B2F63909 /* AppAppearance.swift in Sources */,
 				7E4F011DE59F253C20BFA32E /* AppTheme.swift in Sources */,
 				8D46946F107D2456ECE6F8FB /* ArchiveView.swift in Sources */,
 				6DD9C89326CABC820A9CCA71 /* BackupArchiveMapper.swift in Sources */,

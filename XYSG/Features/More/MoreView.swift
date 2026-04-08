@@ -223,7 +223,7 @@ struct MoreView: View {
                                 LinearGradient(
                                     colors: [
                                         accent.opacity(0.28),
-                                        Color.white.opacity(0.03),
+                                        AppTheme.glassFillHighlight.opacity(0.8),
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -267,19 +267,19 @@ struct MoreView: View {
         .padding(.horizontal, 18)
         .padding(.vertical, 16)
         .background(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(.thinMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 26, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
-                }
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(.thinMaterial)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                            .strokeBorder(AppTheme.glassStroke.opacity(0.7), lineWidth: 1)
+                    }
                 .overlay {
                     RoundedRectangle(cornerRadius: 26, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [
                                     accent.opacity(0.18),
-                                    Color.white.opacity(0.02),
+                                    AppTheme.glassFillHighlight.opacity(0.6),
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing

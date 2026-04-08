@@ -27,14 +27,14 @@ struct ShowCard: View {
         .contentShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.12))
+                .strokeBorder(AppTheme.glassStroke)
         }
         .background {
             RoundedRectangle(cornerRadius: 32, style: .continuous)
-                .fill(AppTheme.surfaceBright.opacity(0.16))
+                .fill(AppTheme.cardBackdrop)
                 .blur(radius: 18)
         }
-        .shadow(color: Color.black.opacity(0.24), radius: 26, y: 18)
+        .shadow(color: AppTheme.elevationShadow, radius: 26, y: 18)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -118,7 +118,7 @@ struct ShowCard: View {
                     LinearGradient(
                         colors: [
                             Color.white.opacity(0.28),
-                            palette?.topHighlight.amplifiedSwiftUIColor(extraOpacity: 0.01) ?? Color.white.opacity(0.08),
+                            palette?.topHighlight.amplifiedSwiftUIColor(extraOpacity: 0.01) ?? AppTheme.glassSpecular,
                             Color.clear,
                         ],
                         startPoint: .top,
@@ -128,7 +128,7 @@ struct ShowCard: View {
                 .frame(height: 1.2)
 
             Circle()
-                .fill(Color.white.opacity(0.18))
+                .fill(AppTheme.glassSpecular.opacity(0.78))
                 .frame(width: 88, height: 88)
                 .blur(radius: 16)
                 .offset(x: 72, y: -10)
@@ -166,9 +166,9 @@ struct ShowCard: View {
     private func gradientColors(for palette: DynamicGlassPalette?) -> [Color] {
         guard let palette else {
             return [
-                Color.white.opacity(0.10),
-                Color.white.opacity(0.04),
-                Color.black.opacity(0.02),
+                AppTheme.glassSpecular.opacity(0.5),
+                AppTheme.glassFillHighlight.opacity(0.6),
+                AppTheme.surfaceBright.opacity(0.08),
             ]
         }
 

@@ -28,9 +28,9 @@ struct LaunchExperienceView: View {
                         .frame(width: 220, height: 300)
                         .overlay {
                             RoundedRectangle(cornerRadius: 34, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.12))
+                                .strokeBorder(AppTheme.glassStroke)
                         }
-                        .shadow(color: AppTheme.sunOrange.opacity(0.28), radius: 26, y: 16)
+                        .shadow(color: AppTheme.glowShadow.opacity(0.9), radius: 26, y: 16)
 
                     VStack(alignment: .leading, spacing: 14) {
                         Capsule()
@@ -41,7 +41,7 @@ struct LaunchExperienceView: View {
 
                         Text("XYSG")
                             .font(.system(size: 34, weight: .black, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AppTheme.textPrimary)
 
                         Text("你的脱口秀票根档案馆")
                             .font(.headline.weight(.semibold))

@@ -326,30 +326,51 @@ struct ArchiveView: View {
 
     @MainActor
     private func fetchShowPage(offset: Int, limit: Int) throws -> [ShowRecord] {
-        var descriptor = FetchDescriptor<ShowRecord>(
-            predicate: showPredicate,
-            sortBy: [SortDescriptor(\ShowRecord.updatedAt, order: .reverse)]
+        if filters.selectedFormat == nil {
+            var descriptor = FetchDescriptor<ShowRecord>(
+                predicate: brandPredicate,
+                sortBy: [SortDescriptor(\ShowRecord.updatedAt, order: .reverse)]
+            )
+            descriptor.fetchOffset = offset
+            descriptor.fetchLimit = limit
+            return try modelContext.fetch(descriptor)
+        }
+
+        // `ShowFormat` enum predicates have been unreliable in this SwiftData fetch path.
+        // Keep database sorting and brand scoping, then filter format in memory.
+        let candidates = try modelContext.fetch(
+            FetchDescriptor<ShowRecord>(
+                predicate: brandPredicate,
+                sortBy: [SortDescriptor(\ShowRecord.updatedAt, order: .reverse)]
+            )
         )
-        descriptor.fetchOffset = offset
-        descriptor.fetchLimit = limit
-        return try modelContext.fetch(descriptor)
+        let pageIDs = ArchivePageFilter.pageIDs(
+            from: candidates.map {
+                ArchivePageRecord(
+                    id: $0.id,
+                    updatedAt: $0.updatedAt,
+                    format: $0.format,
+                    brandID: $0.brand?.id
+                )
+            },
+            filters: ArchiveQueryFilters(
+                selectedFormat: filters.selectedFormat,
+                selectedBrandID: filters.selectedBrandID
+            ),
+            offset: offset,
+            limit: limit
+        )
+        let showsByID = Dictionary(uniqueKeysWithValues: candidates.map { ($0.id, $0) })
+        return pageIDs.compactMap { showsByID[$0] }
     }
 
-    private var showPredicate: Predicate<ShowRecord>? {
-        switch (filters.selectedFormat, filters.selectedBrandID) {
-        case let (.some(format), .some(brandID)):
-            return #Predicate<ShowRecord> {
-                $0.format == format && $0.brand?.id == brandID
-            }
-        case let (.some(format), nil):
-            return #Predicate<ShowRecord> {
-                $0.format == format
-            }
-        case let (nil, .some(brandID)):
+    private var brandPredicate: Predicate<ShowRecord>? {
+        switch filters.selectedBrandID {
+        case let .some(brandID):
             return #Predicate<ShowRecord> {
                 $0.brand?.id == brandID
             }
-        case (nil, nil):
+        case nil:
             return nil
         }
     }

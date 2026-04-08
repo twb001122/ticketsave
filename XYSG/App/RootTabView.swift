@@ -1,8 +1,10 @@
 import SwiftUI
+import XYSGCore
 
 struct RootTabView: View {
     let recoveryMessage: String?
 
+    @AppStorage(AppAppearance.storageKey) private var themePreferenceRawValue = ThemePreference.system.rawValue
     @State private var selectedTab: RootTab = .archive
     @State private var showsLaunchOverlay = true
     @State private var activeRecoveryMessage: String?
@@ -57,7 +59,11 @@ struct RootTabView: View {
             Text(activeRecoveryMessage ?? "")
         }
         .tint(AppTheme.sunOrange)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(themePreference.preferredColorScheme)
+    }
+
+    private var themePreference: ThemePreference {
+        ThemePreference(rawValue: themePreferenceRawValue) ?? .system
     }
 }
 
