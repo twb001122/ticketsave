@@ -1,0 +1,50 @@
+name: XYSG
+options:
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    IPHONEOS_DEPLOYMENT_TARGET: 26.0
+    TARGETED_DEVICE_FAMILY: "1"
+    DEVELOPMENT_ASSET_PATHS: "\"XYSG/Resources/Preview Content\""
+packages:
+  XYSGCore:
+    path: Packages
+targets:
+  XYSG:
+    type: application
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: XYSG
+    resources:
+      - path: XYSG/Resources
+    dependencies:
+      - package: XYSGCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mada.xysg
+        PRODUCT_NAME: XYSG
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: YES
+        INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleLightContent
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone:
+          - UIInterfaceOrientationPortrait
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 1.0
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+schemes:
+  XYSG:
+    build:
+      targets:
+        XYSG: all
+    run:
+      config: Debug
+    test:
+      config: Debug
