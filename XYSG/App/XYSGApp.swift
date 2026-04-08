@@ -64,7 +64,7 @@ private struct AppBootstrap {
                 let recoveryMessage = directoryRecovery.map { recovery in
                     """
                     检测到旧版本本地数据库无法自动迁移，app 已把旧数据库目录移到 \(recovery.recoveryDirectoryURL.lastPathComponent) 并重新创建空数据库。\
-                    如果你之前导出过 zip 备份，现在可以去 More 里执行“导入 zip 备份”。
+                    如果你之前导出过 zip 备份，现在可以去 Settings > 本地备份 里执行“导入 zip 备份”。
                     """
                 }
                 return AppBootstrap(

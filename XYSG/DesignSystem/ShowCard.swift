@@ -24,6 +24,7 @@ struct ShowCard: View {
             )
         }
         .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 32, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.12))
@@ -67,33 +68,33 @@ struct ShowCard: View {
         metadata: ShowPresentation.CardMetadata,
         palette: DynamicGlassPalette?
     ) -> some View {
-        HStack(alignment: .center, spacing: 14) {
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(show.displayTitle)
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(AppTheme.textPrimary)
-                    .lineLimit(2)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
+                Text(metadata.primaryLine)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
+
+            HStack(alignment: .center, spacing: 12) {
                 Text(show.venueDisplay.isEmpty ? ShowPresentation.pendingVenueLabel : show.venueDisplay)
                     .font(.subheadline)
                     .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(1)
-            }
-
-            Spacer(minLength: 10)
-
-            VStack(alignment: .trailing, spacing: 8) {
-                Text(metadata.primaryLine)
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .multilineTextAlignment(.trailing)
-                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 formatBadge(title: metadata.secondaryLine, accent: accent)
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 13)
+        .padding(.vertical, 14)
         .background(panelBackground(for: palette))
     }
 

@@ -4,6 +4,11 @@ import UniformTypeIdentifiers
 import XYSGCore
 
 struct MoreView: View {
+    private enum BackupAction {
+        case exportArchive
+        case importArchive
+    }
+
     @Environment(\.modelContext) private var modelContext
     @State private var backupSnapshot: LocalBackupSnapshot?
     @State private var exportDocument: LocalBackupArchiveDocument?
@@ -15,88 +20,88 @@ struct MoreView: View {
     @State private var feedbackMessage: String?
     @State private var activeError: String?
     @State private var isBusy = false
+    @State private var activeAction: BackupAction?
 
     private let backupService = LocalBackupArchiveService()
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+        ZStack {
+            AppTheme.backgroundGradient
+                .ignoresSafeArea()
 
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 22) {
-                        hero
-                        statusCard
-                        actionsCard
-                        notesCard
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 24)
-                    .padding(.bottom, 120)
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 22) {
+                    hero
+                    statusCard
+                    actionsCard
+                    notesCard
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 24)
+                .padding(.bottom, 120)
+            }
+        }
+        .navigationTitle(SettingsDestination.localBackup.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .fileExporter(
+            isPresented: $showsExporter,
+            document: exportDocument,
+            contentType: .zip,
+            defaultFilename: suggestedExportFileName
+        ) { result in
+            switch result {
+            case .success:
+                Haptics.success()
+                feedbackMessage = "zip 备份已导出。"
+            case let .failure(error):
+                activeError = error.localizedDescription
+                Haptics.error()
+            }
+        }
+        .fileImporter(
+            isPresented: $showsImporter,
+            allowedContentTypes: [.zip],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case let .success(urls):
+                pendingImportURL = urls.first
+                showsRestoreConfirmation = pendingImportURL != nil
+            case let .failure(error):
+                activeError = error.localizedDescription
+                Haptics.error()
+            }
+        }
+        .confirmationDialog(
+            "导入 zip 备份会覆盖当前本机卡片，确定继续吗？",
+            isPresented: $showsRestoreConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("导入并覆盖", role: .destructive) {
+                Task {
+                    await restore()
                 }
             }
-            .navigationTitle("More")
-            .fileExporter(
-                isPresented: $showsExporter,
-                document: exportDocument,
-                contentType: .zip,
-                defaultFilename: suggestedExportFileName
-            ) { result in
-                switch result {
-                case .success:
-                    Haptics.success()
-                    feedbackMessage = "zip 备份已导出。"
-                case let .failure(error):
-                    activeError = error.localizedDescription
-                    Haptics.error()
-                }
-            }
-            .fileImporter(
-                isPresented: $showsImporter,
-                allowedContentTypes: [.zip],
-                allowsMultipleSelection: false
-            ) { result in
-                switch result {
-                case let .success(urls):
-                    pendingImportURL = urls.first
-                    showsRestoreConfirmation = pendingImportURL != nil
-                case let .failure(error):
-                    activeError = error.localizedDescription
-                    Haptics.error()
-                }
-            }
-            .confirmationDialog(
-                "导入 zip 备份会覆盖当前本机卡片，确定继续吗？",
-                isPresented: $showsRestoreConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("导入并覆盖", role: .destructive) {
-                    Task {
-                        await restore()
-                    }
-                }
 
-                Button("取消", role: .cancel) {}
-            } message: {
-                Text("恢复会先清空当前本地数据，再导入你选择的 zip 备份。")
-            }
-            .alert("完成", isPresented: Binding(
-                get: { feedbackMessage != nil },
-                set: { if !$0 { feedbackMessage = nil } }
-            )) {
-                Button("知道了", role: .cancel) {}
-            } message: {
-                Text(feedbackMessage ?? "")
-            }
-            .alert("出错了", isPresented: Binding(
-                get: { activeError != nil },
-                set: { if !$0 { activeError = nil } }
-            )) {
-                Button("知道了", role: .cancel) {}
-            } message: {
-                Text(activeError ?? "")
-            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("恢复会先清空当前本地数据，再导入你选择的 zip 备份。")
+        }
+        .alert("完成", isPresented: Binding(
+            get: { feedbackMessage != nil },
+            set: { if !$0 { feedbackMessage = nil } }
+        )) {
+            Button("知道了", role: .cancel) {}
+        } message: {
+            Text(feedbackMessage ?? "")
+        }
+        .alert("出错了", isPresented: Binding(
+            get: { activeError != nil },
+            set: { if !$0 { activeError = nil } }
+        )) {
+            Button("知道了", role: .cancel) {}
+        } message: {
+            Text(activeError ?? "")
         }
     }
 
@@ -149,26 +154,32 @@ struct MoreView: View {
                     await backup()
                 }
             } label: {
-                actionLabel(
+                actionCard(
                     title: isBusy ? "正在生成..." : "导出 zip 备份",
-                    subtitle: "把当前本机所有卡片、结构化实体和封面打包成一个 zip 文件"
+                    subtitle: "把当前本机所有卡片、结构化实体和封面打包成一个 zip 文件",
+                    iconName: "square.and.arrow.up",
+                    accent: AppTheme.sunOrange,
+                    isBusy: isBusy && activeAction == .exportArchive
                 )
             }
-            .buttonStyle(GlowButtonStyle())
+            .buttonStyle(.plain)
             .disabled(isBusy)
 
             Button {
                 showsImporter = true
             } label: {
-                actionLabel(
+                actionCard(
                     title: isBusy ? "正在导入..." : "导入 zip 备份",
-                    subtitle: "选择一个本地 zip 备份并覆盖当前本机档案"
+                    subtitle: "选择一个本地 zip 备份并覆盖当前本机档案",
+                    iconName: "square.and.arrow.down",
+                    accent: AppTheme.skyGlow,
+                    isBusy: isBusy && activeAction == .importArchive
                 )
             }
             .buttonStyle(.plain)
             .disabled(isBusy)
-            .glassSurface(tint: AppTheme.surfaceBright.opacity(0.12), padding: 18, cornerRadius: 26)
         }
+        .glassSurface(tint: AppTheme.surfaceBright.opacity(0.12), padding: 20, cornerRadius: 30)
     }
 
     private var notesCard: some View {
@@ -195,8 +206,37 @@ struct MoreView: View {
         }
     }
 
-    private func actionLabel(title: String, subtitle: String) -> some View {
+    private func actionCard(
+        title: String,
+        subtitle: String,
+        iconName: String,
+        accent: Color,
+        isBusy: Bool
+    ) -> some View {
         HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        accent.opacity(0.28),
+                                        Color.white.opacity(0.03),
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
+
+                Image(systemName: iconName)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(accent)
+            }
+            .frame(width: 52, height: 52)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.headline.weight(.semibold))
@@ -214,15 +254,44 @@ struct MoreView: View {
                 ProgressView()
                     .tint(AppTheme.textPrimary)
             } else {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(AppTheme.sunOrange)
+                Image(systemName: "arrow.up.right")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(accent.opacity(0.14))
+                    )
             }
         }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(.thinMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    accent.opacity(0.18),
+                                    Color.white.opacity(0.02),
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+        )
     }
 
     private func backup() async {
         guard !isBusy else { return }
+        activeAction = .exportArchive
         isBusy = true
 
         do {
@@ -241,11 +310,13 @@ struct MoreView: View {
         }
 
         isBusy = false
+        activeAction = nil
     }
 
     private func restore() async {
         guard !isBusy else { return }
         guard let pendingImportURL else { return }
+        activeAction = .importArchive
         isBusy = true
 
         do {
@@ -260,6 +331,7 @@ struct MoreView: View {
 
         self.pendingImportURL = nil
         isBusy = false
+        activeAction = nil
     }
 
     private func exportFileName(for manifest: BackupArchiveManifest) -> String {

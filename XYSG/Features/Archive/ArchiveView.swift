@@ -169,6 +169,8 @@ struct ArchiveView: View {
                 }
             }
         }
+        .contentShape(Rectangle())
+        .zIndex(2)
     }
 
     private var cardsSection: some View {
@@ -197,7 +199,11 @@ struct ArchiveView: View {
             } else {
                 ForEach(pagedShows, id: \.id) { show in
                     NavigationLink {
-                        ShowDetailView(show: show, namespace: archiveNamespace)
+                        ShowDetailView(show: show, namespace: archiveNamespace) {
+                            Task { @MainActor in
+                                await refreshArchive()
+                            }
+                        }
                     } label: {
                         ShowCard(show: show, namespace: archiveNamespace)
                     }
@@ -221,6 +227,7 @@ struct ArchiveView: View {
                 }
             }
         }
+        .zIndex(0)
     }
 
     @MainActor

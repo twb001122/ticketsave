@@ -23,13 +23,7 @@ struct RootTabView: View {
                 SettingsView()
                     .tag(RootTab.settings)
                     .tabItem {
-                        Label("Settings", systemImage: "slider.horizontal.3")
-                    }
-
-                MoreView()
-                    .tag(RootTab.more)
-                    .tabItem {
-                        Label("More", systemImage: "ellipsis.circle")
+                        Label("Settings", systemImage: "gearshape.fill")
                     }
             }
 
@@ -70,5 +64,4 @@ struct RootTabView: View {
 private enum RootTab {
     case archive
     case settings
-    case more
 }

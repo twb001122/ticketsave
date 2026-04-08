@@ -8,6 +8,7 @@ struct ShowDetailView: View {
 
     let show: ShowRecord
     let namespace: Namespace.ID
+    var onShowDeleted: () -> Void = {}
 
     @State private var isPresentingEditor = false
     @State private var notesDraft = ""
@@ -188,6 +189,7 @@ struct ShowDetailView: View {
     private func deleteShow() {
         do {
             try ShowRecordDeletionService().delete(show, in: modelContext)
+            onShowDeleted()
             Haptics.success()
             dismiss()
         } catch {

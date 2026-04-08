@@ -5,7 +5,7 @@ import XYSGCore
 struct CoverAssetRepository {
     let store: CoverImageStore
     private let fileManager: FileManager
-    private let maxPixelDimension: CGFloat = 540
+    private let maxShortestSide: CGFloat = 540
 
     init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
@@ -73,14 +73,11 @@ struct CoverAssetRepository {
         }
 
         let originalSize = image.size
-        let longestSide = max(originalSize.width, originalSize.height)
-        guard longestSide > 0 else { return nil }
-
-        let scaleFactor = min(1, maxPixelDimension / longestSide)
-        let targetSize = CGSize(
-            width: max(1, (originalSize.width * scaleFactor).rounded(.toNearestOrAwayFromZero)),
-            height: max(1, (originalSize.height * scaleFactor).rounded(.toNearestOrAwayFromZero))
+        let targetSize = ImageSizing.scaledSize(
+            for: originalSize,
+            maxShortestSide: maxShortestSide
         )
+        guard targetSize != .zero else { return nil }
 
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = 1
