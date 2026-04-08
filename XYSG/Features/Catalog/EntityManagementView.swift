@@ -42,49 +42,85 @@ struct EntityManagementView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Picker("实体类别", selection: $selectedSection) {
-                ForEach(CatalogSection.allCases) { section in
-                    Text(section.title).tag(section)
-                }
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: selectedSection) { _, _ in
-                Haptics.selection()
-            }
+            catalogTabs
 
             headerCard
 
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 14) {
-                    switch selectedSection {
-                    case .performers:
-                        ForEach(performers, id: \.id) { performer in
-                            PerformerManagementRow(
-                                performer: performer,
-                                onEdit: { performerEditorTarget = performer },
-                                onDelete: { deletePerformer(performer) }
-                            )
-                        }
-                    case .brands:
-                        ForEach(brands, id: \.id) { brand in
-                            BrandManagementRow(
-                                brand: brand,
-                                onEdit: { brandEditorTarget = brand },
-                                onDelete: { deleteBrand(brand) }
-                            )
-                        }
-                    case .venues:
-                        ForEach(venues, id: \.id) { venue in
-                            VenueManagementRow(
-                                venue: venue,
-                                onEdit: { venueEditorTarget = venue },
-                                onDelete: { deleteVenue(venue) }
-                            )
-                        }
+            List {
+                switch selectedSection {
+                case .performers:
+                    ForEach(performers, id: \.id) { performer in
+                        PerformerManagementRow(performer: performer)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    Haptics.selection()
+                                    performerEditorTarget = performer
+                                } label: {
+                                    Label("编辑", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+
+                                Button(role: .destructive) {
+                                    Haptics.warning()
+                                    deletePerformer(performer)
+                                } label: {
+                                    Label("删除", systemImage: "trash")
+                                }
+                            }
+                    }
+                case .brands:
+                    ForEach(brands, id: \.id) { brand in
+                        BrandManagementRow(brand: brand)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    Haptics.selection()
+                                    brandEditorTarget = brand
+                                } label: {
+                                    Label("编辑", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+
+                                Button(role: .destructive) {
+                                    Haptics.warning()
+                                    deleteBrand(brand)
+                                } label: {
+                                    Label("删除", systemImage: "trash")
+                                }
+                            }
+                    }
+                case .venues:
+                    ForEach(venues, id: \.id) { venue in
+                        VenueManagementRow(venue: venue)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    Haptics.selection()
+                                    venueEditorTarget = venue
+                                } label: {
+                                    Label("编辑", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+
+                                Button(role: .destructive) {
+                                    Haptics.warning()
+                                    deleteVenue(venue)
+                                } label: {
+                                    Label("删除", systemImage: "trash")
+                                }
+                            }
                     }
                 }
-                .padding(.bottom, 24)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
         .sheet(item: $performerEditorTarget) { performer in
             NavigationStack {
@@ -122,6 +158,38 @@ struct EntityManagementView: View {
             Button("知道了", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")
+        }
+    }
+
+    private var catalogTabs: some View {
+        HStack(spacing: 10) {
+            ForEach(CatalogSection.allCases) { section in
+                Button {
+                    guard selectedSection != section else { return }
+                    Haptics.selection()
+                    selectedSection = section
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: section.icon)
+                            .font(.subheadline.weight(.semibold))
+                        Text(section.title)
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(selectedSection == section ? AppTheme.onAccentText : AppTheme.textPrimary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(selectedSection == section ? AnyShapeStyle(AppTheme.actionGradient) : AnyShapeStyle(.ultraThinMaterial))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .strokeBorder(AppTheme.glassStroke.opacity(selectedSection == section ? 0.16 : 0.4))
+                            }
+                    )
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 
@@ -194,55 +262,37 @@ struct EntityManagementView: View {
 
 private struct PerformerManagementRow: View {
     let performer: Performer
-    let onEdit: () -> Void
-    let onDelete: () -> Void
 
     var body: some View {
         ManagementRowShell(
             title: performer.displayName,
             subtitle: performer.stageName ?? "演员实体",
             countText: "\(performer.shows.count) 场"
-        ) {
-            onEdit()
-        } onDelete: {
-            onDelete()
-        }
+        )
     }
 }
 
 private struct BrandManagementRow: View {
     let brand: ProductionBrand
-    let onEdit: () -> Void
-    let onDelete: () -> Void
 
     var body: some View {
         ManagementRowShell(
             title: brand.displayName,
             subtitle: brand.cityName ?? "厂牌实体",
             countText: "\(brand.shows.count) 场"
-        ) {
-            onEdit()
-        } onDelete: {
-            onDelete()
-        }
+        )
     }
 }
 
 private struct VenueManagementRow: View {
     let venue: Venue
-    let onEdit: () -> Void
-    let onDelete: () -> Void
 
     var body: some View {
         ManagementRowShell(
             title: venue.displayName,
             subtitle: [venue.cityName, venue.district].compactMap { $0 }.joined(separator: " · "),
             countText: "\(venue.shows.count) 场"
-        ) {
-            onEdit()
-        } onDelete: {
-            onDelete()
-        }
+        )
     }
 }
 
@@ -250,43 +300,26 @@ private struct ManagementRowShell: View {
     let title: String
     let subtitle: String
     let countText: String
-    let onEdit: () -> Void
-    let onDelete: () -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title.isEmpty ? "未命名实体" : title)
-                    .font(.headline)
-                    .foregroundStyle(AppTheme.textPrimary)
-                if !subtitle.isEmpty {
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(AppTheme.textSecondary)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(title.isEmpty ? "未命名实体" : title)
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.textPrimary)
+                    if !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
+                    Text(countText)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppTheme.sunOrange)
                 }
-                Text(countText)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(AppTheme.sunOrange)
+
+                Spacer(minLength: 12)
             }
-
-            Spacer()
-
-            VStack(spacing: 10) {
-                Button {
-                    Haptics.selection()
-                    onEdit()
-                } label: {
-                    Image(systemName: "pencil")
-                }
-
-                Button(role: .destructive) {
-                    Haptics.warning()
-                    onDelete()
-                } label: {
-                    Image(systemName: "trash")
-                }
-            }
-            .foregroundStyle(AppTheme.textPrimary)
         }
         .glassSurface(tint: AppTheme.surfaceBright.opacity(0.16), padding: 18, cornerRadius: 24)
     }
@@ -295,27 +328,49 @@ private struct ManagementRowShell: View {
 struct PerformerEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: [SortDescriptor(\ProductionBrand.displayName)]) private var brands: [ProductionBrand]
 
     let performer: Performer?
     var onSaved: ((Performer) -> Void)? = nil
 
     @State private var name = ""
     @State private var stageName = ""
+    @State private var selectedBrandIDs: Set<UUID> = []
+    @State private var showsBrandSelector = false
     @State private var errorMessage: String?
 
     var body: some View {
         editorScaffold(title: performer == nil ? "新增演员" : "编辑演员") {
             glassField("演员名称", text: $name)
             glassField("艺名 / 备注", text: $stageName)
+            relationSelectorCard(
+                title: "关联厂牌",
+                icon: "building.2.crop.circle",
+                items: selectedBrands.map(\.displayName)
+            ) {
+                Haptics.softImpact()
+                showsBrandSelector = true
+            }
         } saveAction: {
             do {
                 let service = EntityCatalogService()
                 let saved: Performer
                 if let performer {
-                    try service.updatePerformer(performer, name: name, stageName: stageName, in: modelContext)
+                    try service.updatePerformer(
+                        performer,
+                        name: name,
+                        stageName: stageName,
+                        brandIDs: Array(selectedBrandIDs),
+                        in: modelContext
+                    )
                     saved = performer
                 } else {
-                    saved = try service.createPerformer(name: name, stageName: stageName, in: modelContext)
+                    saved = try service.createPerformer(
+                        name: name,
+                        stageName: stageName,
+                        brandIDs: Array(selectedBrandIDs),
+                        in: modelContext
+                    )
                 }
                 Haptics.success()
                 onSaved?(saved)
@@ -328,6 +383,14 @@ struct PerformerEditorSheet: View {
         .onAppear {
             name = performer?.displayName ?? ""
             stageName = performer?.stageName ?? ""
+            selectedBrandIDs = Set(performer?.brands.map(\.id) ?? [])
+        }
+        .sheet(isPresented: $showsBrandSelector) {
+            NavigationStack {
+                BrandLinkSelectionSheet(initiallySelectedIDs: selectedBrandIDs) { ids in
+                    selectedBrandIDs = Set(ids)
+                }
+            }
         }
         .alert("保存失败", isPresented: Binding(get: { errorMessage != nil }, set: { newValue in
             if !newValue { errorMessage = nil }
@@ -337,32 +400,71 @@ struct PerformerEditorSheet: View {
             Text(errorMessage ?? "")
         }
     }
+
+    private var selectedBrands: [ProductionBrand] {
+        brands.filter { selectedBrandIDs.contains($0.id) }
+    }
 }
 
 struct BrandEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: [SortDescriptor(\Performer.displayName)]) private var performers: [Performer]
+    @Query(sort: [SortDescriptor(\Venue.displayName)]) private var venues: [Venue]
 
     let brand: ProductionBrand?
     var onSaved: ((ProductionBrand) -> Void)? = nil
 
     @State private var name = ""
     @State private var cityName = ""
+    @State private var selectedPerformerIDs: Set<UUID> = []
+    @State private var selectedVenueIDs: Set<UUID> = []
+    @State private var showsPerformerSelector = false
+    @State private var showsVenueSelector = false
     @State private var errorMessage: String?
 
     var body: some View {
         editorScaffold(title: brand == nil ? "新增厂牌" : "编辑厂牌") {
             glassField("厂牌名称", text: $name)
             glassField("所属城市", text: $cityName)
+            relationSelectorCard(
+                title: "关联演员",
+                icon: "person.2.fill",
+                items: selectedPerformers.map(\.displayName)
+            ) {
+                Haptics.softImpact()
+                showsPerformerSelector = true
+            }
+            relationSelectorCard(
+                title: "关联场地",
+                icon: "mappin.and.ellipse",
+                items: selectedVenues.map(\.displayName)
+            ) {
+                Haptics.softImpact()
+                showsVenueSelector = true
+            }
         } saveAction: {
             do {
                 let service = EntityCatalogService()
                 let saved: ProductionBrand
                 if let brand {
-                    try service.updateBrand(brand, name: name, cityName: cityName, in: modelContext)
+                    try service.updateBrand(
+                        brand,
+                        name: name,
+                        cityName: cityName,
+                        performerIDs: Array(selectedPerformerIDs),
+                        venueIDs: Array(selectedVenueIDs),
+                        in: modelContext
+                    )
                     saved = brand
                 } else {
-                    saved = try service.createBrand(name: name, cityName: cityName, in: modelContext)
+                    saved = try service.createBrand(
+                        name: name,
+                        cityName: cityName,
+                        performerIDs: Array(selectedPerformerIDs),
+                        venueIDs: Array(selectedVenueIDs),
+                        in: modelContext
+                    )
                 }
                 Haptics.success()
                 onSaved?(saved)
@@ -375,6 +477,22 @@ struct BrandEditorSheet: View {
         .onAppear {
             name = brand?.displayName ?? ""
             cityName = brand?.cityName ?? ""
+            selectedPerformerIDs = Set(brand?.performers.map(\.id) ?? [])
+            selectedVenueIDs = Set(brand?.venues.map(\.id) ?? [])
+        }
+        .sheet(isPresented: $showsPerformerSelector) {
+            NavigationStack {
+                PerformerLinkSelectionSheet(initiallySelectedIDs: selectedPerformerIDs) { ids in
+                    selectedPerformerIDs = Set(ids)
+                }
+            }
+        }
+        .sheet(isPresented: $showsVenueSelector) {
+            NavigationStack {
+                VenueLinkSelectionSheet(initiallySelectedIDs: selectedVenueIDs) { ids in
+                    selectedVenueIDs = Set(ids)
+                }
+            }
         }
         .alert("保存失败", isPresented: Binding(get: { errorMessage != nil }, set: { newValue in
             if !newValue { errorMessage = nil }
@@ -384,11 +502,20 @@ struct BrandEditorSheet: View {
             Text(errorMessage ?? "")
         }
     }
+
+    private var selectedPerformers: [Performer] {
+        performers.filter { selectedPerformerIDs.contains($0.id) }
+    }
+
+    private var selectedVenues: [Venue] {
+        venues.filter { selectedVenueIDs.contains($0.id) }
+    }
 }
 
 struct VenueEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: [SortDescriptor(\Performer.displayName)]) private var performers: [Performer]
 
     let venue: Venue?
     var onSaved: ((Venue) -> Void)? = nil
@@ -397,6 +524,8 @@ struct VenueEditorSheet: View {
     @State private var cityName = ""
     @State private var district = ""
     @State private var addressLine = ""
+    @State private var selectedPerformerIDs: Set<UUID> = []
+    @State private var showsPerformerSelector = false
     @State private var errorMessage: String?
 
     var body: some View {
@@ -405,6 +534,14 @@ struct VenueEditorSheet: View {
             glassField("城市", text: $cityName)
             glassField("区县 / 商圈", text: $district)
             glassField("详细地址", text: $addressLine)
+            relationSelectorCard(
+                title: "关联演员",
+                icon: "person.2.fill",
+                items: selectedPerformers.map(\.displayName)
+            ) {
+                Haptics.softImpact()
+                showsPerformerSelector = true
+            }
         } saveAction: {
             do {
                 let service = EntityCatalogService()
@@ -416,6 +553,7 @@ struct VenueEditorSheet: View {
                         cityName: cityName,
                         addressLine: addressLine,
                         district: district,
+                        performerIDs: Array(selectedPerformerIDs),
                         in: modelContext
                     )
                     saved = venue
@@ -425,6 +563,7 @@ struct VenueEditorSheet: View {
                         cityName: cityName,
                         addressLine: addressLine,
                         district: district,
+                        performerIDs: Array(selectedPerformerIDs),
                         in: modelContext
                     )
                 }
@@ -441,6 +580,14 @@ struct VenueEditorSheet: View {
             cityName = venue?.cityName ?? ""
             district = venue?.district ?? ""
             addressLine = venue?.addressLine ?? ""
+            selectedPerformerIDs = Set(venue?.performers.map(\.id) ?? [])
+        }
+        .sheet(isPresented: $showsPerformerSelector) {
+            NavigationStack {
+                PerformerLinkSelectionSheet(initiallySelectedIDs: selectedPerformerIDs) { ids in
+                    selectedPerformerIDs = Set(ids)
+                }
+            }
         }
         .alert("保存失败", isPresented: Binding(get: { errorMessage != nil }, set: { newValue in
             if !newValue { errorMessage = nil }
@@ -449,6 +596,10 @@ struct VenueEditorSheet: View {
         } message: {
             Text(errorMessage ?? "")
         }
+    }
+
+    private var selectedPerformers: [Performer] {
+        performers.filter { selectedPerformerIDs.contains($0.id) }
     }
 }
 
@@ -486,4 +637,51 @@ private func glassField(_ placeholder: String, text: Binding<String>) -> some Vi
         .padding(.vertical, 16)
         .foregroundStyle(AppTheme.textPrimary)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+}
+
+@MainActor
+private func relationSelectorCard(
+    title: String,
+    icon: String,
+    items: [String],
+    action: @escaping @MainActor () -> Void
+) -> some View {
+    VStack(alignment: .leading, spacing: 14) {
+        HStack {
+            Label(title, systemImage: icon)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppTheme.textPrimary)
+            Spacer()
+            Button("选择") {
+                action()
+            }
+            .buttonStyle(.plain)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(AppTheme.sunOrange)
+        }
+
+        if items.isEmpty {
+            Text("暂未关联")
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.textSecondary)
+        } else {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                        Text(item)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule(style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                            )
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+        }
+    }
+    .glassSurface(tint: AppTheme.surfaceBright.opacity(0.14), padding: 18, cornerRadius: 24)
 }

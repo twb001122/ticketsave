@@ -9,7 +9,7 @@ enum AppTheme {
     static let surfaceBright = Color(themeLight: 0xD8B8A0, dark: 0xFFFFFF)
     static let textPrimary = Color(themeLight: 0x251D19, dark: 0xFFFFFF)
     static let textSecondary = Color(themeLight: 0x74685F, dark: 0xFFFFFF, alphaDark: 0.68)
-    static let onAccentText = Color(themeLight: 0x241B17, dark: 0x241B17)
+    static let onAccentText = Color(themeLight: 0xFFFFFF, dark: 0xFFFFFF)
 
     static let sunOrange = Color(themeLight: 0xDE7C53, dark: 0xFF9069)
     static let emberOrange = Color(themeLight: 0xE39A53, dark: 0xFFB36E)
@@ -31,6 +31,17 @@ enum AppTheme {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+
+    static let actionGradient = LinearGradient(
+        colors: [
+            Color(themeLight: 0xE38263, dark: 0xFF9069),
+            Color(themeLight: 0xCF6657, dark: 0xFFB36E),
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let actionShadow = Color(themeLight: 0xC86B56, alphaLight: 0.16, dark: 0xFF9069, alphaDark: 0.10)
 
     static let backgroundGradient = LinearGradient(
         colors: [

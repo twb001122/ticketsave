@@ -80,6 +80,8 @@ struct BackupArchiveMapper {
                 normalizedKey: performerRecord.normalizedKey,
                 stageName: performerRecord.stageName,
                 avatarStoragePath: performerRecord.avatarFileName,
+                brands: [],
+                venues: [],
                 createdAt: performerRecord.createdAt,
                 updatedAt: performerRecord.updatedAt
             )
@@ -94,6 +96,8 @@ struct BackupArchiveMapper {
                 normalizedKey: brandRecord.normalizedKey,
                 cityName: brandRecord.cityName,
                 accentColorHex: brandRecord.accentColorHex,
+                performers: [],
+                venues: [],
                 createdAt: brandRecord.createdAt,
                 updatedAt: brandRecord.updatedAt
             )
@@ -110,11 +114,31 @@ struct BackupArchiveMapper {
                 addressLine: venueRecord.addressLine,
                 district: venueRecord.district,
                 cityName: venueRecord.cityName,
+                brands: [],
+                performers: [],
                 createdAt: venueRecord.createdAt,
                 updatedAt: venueRecord.updatedAt
             )
             venuesByID[venue.id] = venue
             context.insert(venue)
+        }
+
+        for performerRecord in payload.archive.performers {
+            performersByID[performerRecord.id]?.brands = performerRecord.brandIDs.compactMap { brandsByID[$0] }
+        }
+
+        for brandRecord in payload.archive.brands {
+            if let brand = brandsByID[brandRecord.id] {
+                brand.performers = brandRecord.performerIDs.compactMap { performersByID[$0] }
+                brand.venues = brandRecord.venueIDs.compactMap { venuesByID[$0] }
+            }
+        }
+
+        for venueRecord in payload.archive.venues {
+            let resolvedPerformers = venueRecord.performerIDs.compactMap { performersByID[$0] }
+            if let venue = venuesByID[venueRecord.id] {
+                venue.performers = resolvedPerformers
+            }
         }
 
         for showRecord in payload.archive.shows {
@@ -170,6 +194,7 @@ struct BackupArchiveMapper {
             normalizedKey: performer.normalizedKey,
             stageName: performer.stageName,
             avatarFileName: performer.avatarStoragePath,
+            brandIDs: performer.brands.map(\.id),
             createdAt: performer.createdAt,
             updatedAt: performer.updatedAt
         )
@@ -182,6 +207,8 @@ struct BackupArchiveMapper {
             normalizedKey: brand.normalizedKey,
             cityName: brand.cityName,
             accentColorHex: brand.accentColorHex,
+            performerIDs: brand.performers.map(\.id),
+            venueIDs: brand.venues.map(\.id),
             createdAt: brand.createdAt,
             updatedAt: brand.updatedAt
         )
@@ -196,6 +223,7 @@ struct BackupArchiveMapper {
             addressLine: venue.addressLine,
             district: venue.district,
             cityName: venue.cityName,
+            performerIDs: venue.performers.map(\.id),
             createdAt: venue.createdAt,
             updatedAt: venue.updatedAt
         )

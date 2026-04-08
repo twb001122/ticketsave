@@ -23,13 +23,19 @@ enum EntityCatalogError: LocalizedError {
 }
 
 struct EntityCatalogService {
-    func createPerformer(name: String, stageName: String, in context: ModelContext) throws -> Performer {
+    func createPerformer(
+        name: String,
+        stageName: String,
+        brandIDs: [UUID] = [],
+        in context: ModelContext
+    ) throws -> Performer {
         let cleanName = try cleanedName(name, label: "演员")
         let now = Date()
         let performer = Performer(
             displayName: cleanName,
             normalizedKey: EntityLookupKey.performer(cleanName),
             stageName: cleanedOptional(stageName),
+            brands: try resolveBrands(ids: brandIDs, in: context),
             createdAt: now,
             updatedAt: now
         )
@@ -38,11 +44,18 @@ struct EntityCatalogService {
         return performer
     }
 
-    func updatePerformer(_ performer: Performer, name: String, stageName: String, in context: ModelContext) throws {
+    func updatePerformer(
+        _ performer: Performer,
+        name: String,
+        stageName: String,
+        brandIDs: [UUID] = [],
+        in context: ModelContext
+    ) throws {
         let cleanName = try cleanedName(name, label: "演员")
         performer.displayName = cleanName
         performer.normalizedKey = EntityLookupKey.performer(cleanName)
         performer.stageName = cleanedOptional(stageName)
+        performer.brands = try resolveBrands(ids: brandIDs, in: context)
         performer.updatedAt = .now
         try context.save()
     }
@@ -55,7 +68,13 @@ struct EntityCatalogService {
         try context.save()
     }
 
-    func createBrand(name: String, cityName: String, in context: ModelContext) throws -> ProductionBrand {
+    func createBrand(
+        name: String,
+        cityName: String,
+        performerIDs: [UUID] = [],
+        venueIDs: [UUID] = [],
+        in context: ModelContext
+    ) throws -> ProductionBrand {
         let cleanName = try cleanedName(name, label: "厂牌")
         let normalizedKey = EntityLookupKey.brand(cleanName)
         try ensureUniqueBrand(normalizedKey: normalizedKey, excluding: nil, in: context)
@@ -65,6 +84,8 @@ struct EntityCatalogService {
             displayName: cleanName,
             normalizedKey: normalizedKey,
             cityName: cleanedOptional(cityName),
+            performers: try resolvePerformers(ids: performerIDs, in: context),
+            venues: try resolveVenues(ids: venueIDs, in: context),
             createdAt: now,
             updatedAt: now
         )
@@ -73,7 +94,14 @@ struct EntityCatalogService {
         return brand
     }
 
-    func updateBrand(_ brand: ProductionBrand, name: String, cityName: String, in context: ModelContext) throws {
+    func updateBrand(
+        _ brand: ProductionBrand,
+        name: String,
+        cityName: String,
+        performerIDs: [UUID] = [],
+        venueIDs: [UUID] = [],
+        in context: ModelContext
+    ) throws {
         let cleanName = try cleanedName(name, label: "厂牌")
         let normalizedKey = EntityLookupKey.brand(cleanName)
         try ensureUniqueBrand(normalizedKey: normalizedKey, excluding: brand.id, in: context)
@@ -81,6 +109,8 @@ struct EntityCatalogService {
         brand.displayName = cleanName
         brand.normalizedKey = normalizedKey
         brand.cityName = cleanedOptional(cityName)
+        brand.performers = try resolvePerformers(ids: performerIDs, in: context)
+        brand.venues = try resolveVenues(ids: venueIDs, in: context)
         brand.updatedAt = .now
         try context.save()
     }
@@ -98,6 +128,7 @@ struct EntityCatalogService {
         cityName: String,
         addressLine: String,
         district: String,
+        performerIDs: [UUID] = [],
         in context: ModelContext
     ) throws -> Venue {
         let cleanName = try cleanedName(name, label: "场地")
@@ -113,6 +144,7 @@ struct EntityCatalogService {
             addressLine: cleanedOptional(addressLine),
             district: cleanedOptional(district),
             cityName: cleanCity,
+            performers: try resolvePerformers(ids: performerIDs, in: context),
             createdAt: now,
             updatedAt: now
         )
@@ -127,6 +159,7 @@ struct EntityCatalogService {
         cityName: String,
         addressLine: String,
         district: String,
+        performerIDs: [UUID] = [],
         in context: ModelContext
     ) throws {
         let cleanName = try cleanedName(name, label: "场地")
@@ -140,6 +173,7 @@ struct EntityCatalogService {
         venue.cityName = cleanCity
         venue.addressLine = cleanedOptional(addressLine)
         venue.district = cleanedOptional(district)
+        venue.performers = try resolvePerformers(ids: performerIDs, in: context)
         venue.updatedAt = .now
         try context.save()
     }
@@ -177,5 +211,26 @@ struct EntityCatalogService {
         if venues.contains(where: { $0.lookupKey == lookupKey && $0.id != id }) {
             throw EntityCatalogError.duplicateVenue
         }
+    }
+
+    private func resolvePerformers(ids: [UUID], in context: ModelContext) throws -> [Performer] {
+        guard !ids.isEmpty else { return [] }
+        let all = try context.fetch(FetchDescriptor<Performer>())
+        let byID = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
+        return ids.compactMap { byID[$0] }
+    }
+
+    private func resolveBrands(ids: [UUID], in context: ModelContext) throws -> [ProductionBrand] {
+        guard !ids.isEmpty else { return [] }
+        let all = try context.fetch(FetchDescriptor<ProductionBrand>())
+        let byID = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
+        return ids.compactMap { byID[$0] }
+    }
+
+    private func resolveVenues(ids: [UUID], in context: ModelContext) throws -> [Venue] {
+        guard !ids.isEmpty else { return [] }
+        let all = try context.fetch(FetchDescriptor<Venue>())
+        let byID = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
+        return ids.compactMap { byID[$0] }
     }
 }

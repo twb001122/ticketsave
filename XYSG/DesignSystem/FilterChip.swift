@@ -14,22 +14,22 @@ struct FilterChip: View {
                 if let count {
                     Text("\(count)")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(isSelected ? AppTheme.onAccentText.opacity(0.8) : AppTheme.textSecondary)
+                        .foregroundStyle(isSelected ? AppTheme.onAccentText.opacity(0.92) : AppTheme.textSecondary)
                 }
             }
-            .foregroundStyle(isSelected ? AppTheme.onAccentText.opacity(0.85) : AppTheme.textPrimary)
+            .foregroundStyle(isSelected ? AppTheme.onAccentText : AppTheme.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(
                 Capsule(style: .continuous)
-                    .fill(isSelected ? AnyShapeStyle(AppTheme.heroGradient) : AnyShapeStyle(.ultraThinMaterial))
+                    .fill(isSelected ? AnyShapeStyle(AppTheme.actionGradient) : AnyShapeStyle(.ultraThinMaterial))
                     .overlay {
                         Capsule(style: .continuous)
-                            .fill(AppTheme.glassFillHighlight.opacity(isSelected ? 1 : 0.7))
+                            .fill(AppTheme.glassFillHighlight.opacity(isSelected ? 0.2 : 0.7))
                     }
                     .overlay {
                         Capsule(style: .continuous)
-                            .strokeBorder(AppTheme.glassStroke.opacity(isSelected ? 0.0 : 0.45))
+                            .strokeBorder(AppTheme.glassStroke.opacity(isSelected ? 0.15 : 0.45))
                     }
             )
         }

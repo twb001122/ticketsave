@@ -10,6 +10,8 @@ final class Venue {
     var addressLine: String?
     var district: String?
     var cityName: String?
+    var brands: [ProductionBrand]
+    @Relationship(deleteRule: .nullify, inverse: \Performer.venues) var performers: [Performer]
     var shows: [ShowRecord]
     var createdAt: Date
     var updatedAt: Date
@@ -22,6 +24,8 @@ final class Venue {
         addressLine: String? = nil,
         district: String? = nil,
         cityName: String? = nil,
+        brands: [ProductionBrand] = [],
+        performers: [Performer] = [],
         shows: [ShowRecord] = [],
         createdAt: Date = .now,
         updatedAt: Date = .now
@@ -33,6 +37,8 @@ final class Venue {
         self.addressLine = addressLine
         self.district = district
         self.cityName = cityName
+        self.brands = brands
+        self.performers = performers
         self.shows = shows
         self.createdAt = createdAt
         self.updatedAt = updatedAt

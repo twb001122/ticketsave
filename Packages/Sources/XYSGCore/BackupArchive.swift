@@ -1,7 +1,7 @@
 import Foundation
 
 public enum BackupArchiveVersion {
-    public static let currentSchemaVersion = 1
+    public static let currentSchemaVersion = 2
 }
 
 public struct BackupArchiveManifest: Codable, Sendable, Hashable {
@@ -141,6 +141,7 @@ public struct BackupPerformerRecord: Codable, Sendable, Hashable {
     public let normalizedKey: String
     public let stageName: String?
     public let avatarFileName: String?
+    public let brandIDs: [UUID]
     public let createdAt: Date
     public let updatedAt: Date
 
@@ -150,6 +151,7 @@ public struct BackupPerformerRecord: Codable, Sendable, Hashable {
         normalizedKey: String,
         stageName: String?,
         avatarFileName: String?,
+        brandIDs: [UUID],
         createdAt: Date,
         updatedAt: Date
     ) {
@@ -158,6 +160,7 @@ public struct BackupPerformerRecord: Codable, Sendable, Hashable {
         self.normalizedKey = normalizedKey
         self.stageName = stageName
         self.avatarFileName = avatarFileName
+        self.brandIDs = brandIDs
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -170,6 +173,7 @@ public struct BackupPerformerRecord: Codable, Sendable, Hashable {
         normalizedKey = try container.decodeIfPresent(String.self, forKey: .normalizedKey) ?? ""
         stageName = try container.decodeIfPresent(String.self, forKey: .stageName)
         avatarFileName = try container.decodeIfPresent(String.self, forKey: .avatarFileName)
+        brandIDs = try container.decodeIfPresent([UUID].self, forKey: .brandIDs) ?? []
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? now
         updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
     }
@@ -181,6 +185,8 @@ public struct BackupBrandRecord: Codable, Sendable, Hashable {
     public let normalizedKey: String
     public let cityName: String?
     public let accentColorHex: String?
+    public let performerIDs: [UUID]
+    public let venueIDs: [UUID]
     public let createdAt: Date
     public let updatedAt: Date
 
@@ -190,6 +196,8 @@ public struct BackupBrandRecord: Codable, Sendable, Hashable {
         normalizedKey: String,
         cityName: String?,
         accentColorHex: String?,
+        performerIDs: [UUID],
+        venueIDs: [UUID],
         createdAt: Date,
         updatedAt: Date
     ) {
@@ -198,6 +206,8 @@ public struct BackupBrandRecord: Codable, Sendable, Hashable {
         self.normalizedKey = normalizedKey
         self.cityName = cityName
         self.accentColorHex = accentColorHex
+        self.performerIDs = performerIDs
+        self.venueIDs = venueIDs
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -210,6 +220,8 @@ public struct BackupBrandRecord: Codable, Sendable, Hashable {
         normalizedKey = try container.decodeIfPresent(String.self, forKey: .normalizedKey) ?? ""
         cityName = try container.decodeIfPresent(String.self, forKey: .cityName)
         accentColorHex = try container.decodeIfPresent(String.self, forKey: .accentColorHex)
+        performerIDs = try container.decodeIfPresent([UUID].self, forKey: .performerIDs) ?? []
+        venueIDs = try container.decodeIfPresent([UUID].self, forKey: .venueIDs) ?? []
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? now
         updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
     }
@@ -223,6 +235,7 @@ public struct BackupVenueRecord: Codable, Sendable, Hashable {
     public let addressLine: String?
     public let district: String?
     public let cityName: String?
+    public let performerIDs: [UUID]
     public let createdAt: Date
     public let updatedAt: Date
 
@@ -234,6 +247,7 @@ public struct BackupVenueRecord: Codable, Sendable, Hashable {
         addressLine: String?,
         district: String?,
         cityName: String?,
+        performerIDs: [UUID],
         createdAt: Date,
         updatedAt: Date
     ) {
@@ -244,6 +258,7 @@ public struct BackupVenueRecord: Codable, Sendable, Hashable {
         self.addressLine = addressLine
         self.district = district
         self.cityName = cityName
+        self.performerIDs = performerIDs
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -258,6 +273,7 @@ public struct BackupVenueRecord: Codable, Sendable, Hashable {
         addressLine = try container.decodeIfPresent(String.self, forKey: .addressLine)
         district = try container.decodeIfPresent(String.self, forKey: .district)
         cityName = try container.decodeIfPresent(String.self, forKey: .cityName)
+        performerIDs = try container.decodeIfPresent([UUID].self, forKey: .performerIDs) ?? []
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? now
         updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
     }

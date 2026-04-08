@@ -8,6 +8,8 @@ final class Performer {
     var normalizedKey: String
     var stageName: String?
     var avatarStoragePath: String?
+    @Relationship(deleteRule: .nullify, inverse: \ProductionBrand.performers) var brands: [ProductionBrand]
+    var venues: [Venue]
     var shows: [ShowRecord]
     var createdAt: Date
     var updatedAt: Date
@@ -18,6 +20,8 @@ final class Performer {
         normalizedKey: String,
         stageName: String? = nil,
         avatarStoragePath: String? = nil,
+        brands: [ProductionBrand] = [],
+        venues: [Venue] = [],
         shows: [ShowRecord] = [],
         createdAt: Date = .now,
         updatedAt: Date = .now
@@ -27,6 +31,8 @@ final class Performer {
         self.normalizedKey = normalizedKey
         self.stageName = stageName
         self.avatarStoragePath = avatarStoragePath
+        self.brands = brands
+        self.venues = venues
         self.shows = shows
         self.createdAt = createdAt
         self.updatedAt = updatedAt

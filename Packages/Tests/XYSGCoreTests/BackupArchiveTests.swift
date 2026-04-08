@@ -3,6 +3,46 @@ import XCTest
 @testable import XYSGCore
 
 final class BackupArchiveTests: XCTestCase {
+    func testDecodesEntityRecordsWithMissingAssociationIDsUsingDefaults() throws {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        let performerJSON = """
+        {
+          "id":"AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
+          "displayName":"Alex",
+          "normalizedKey":"alex",
+          "createdAt":"1970-01-01T00:00:01Z"
+        }
+        """
+        let brandJSON = """
+        {
+          "id":"BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB",
+          "displayName":"Comedy Club",
+          "normalizedKey":"comedy club",
+          "createdAt":"1970-01-01T00:00:01Z"
+        }
+        """
+        let venueJSON = """
+        {
+          "id":"CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC",
+          "displayName":"The Vault",
+          "normalizedKey":"the vault",
+          "lookupKey":"the vault::shanghai",
+          "createdAt":"1970-01-01T00:00:01Z"
+        }
+        """
+
+        let performer = try decoder.decode(BackupPerformerRecord.self, from: Data(performerJSON.utf8))
+        let brand = try decoder.decode(BackupBrandRecord.self, from: Data(brandJSON.utf8))
+        let venue = try decoder.decode(BackupVenueRecord.self, from: Data(venueJSON.utf8))
+
+        XCTAssertEqual(performer.brandIDs, [])
+        XCTAssertEqual(brand.performerIDs, [])
+        XCTAssertEqual(brand.venueIDs, [])
+        XCTAssertEqual(venue.performerIDs, [])
+    }
+
     func testDecodesShowWithMissingFutureFieldsUsingDefaults() throws {
         let json = """
         {
@@ -63,6 +103,7 @@ final class BackupArchiveTests: XCTestCase {
                     normalizedKey: "alex",
                     stageName: nil,
                     avatarFileName: nil,
+                    brandIDs: [UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!],
                     createdAt: .distantPast,
                     updatedAt: .distantPast
                 )
@@ -74,6 +115,8 @@ final class BackupArchiveTests: XCTestCase {
                     normalizedKey: "comedy club",
                     cityName: "Shanghai",
                     accentColorHex: nil,
+                    performerIDs: [UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!],
+                    venueIDs: [UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!],
                     createdAt: .distantPast,
                     updatedAt: .distantPast
                 )
@@ -87,6 +130,7 @@ final class BackupArchiveTests: XCTestCase {
                     addressLine: nil,
                     district: nil,
                     cityName: "Shanghai",
+                    performerIDs: [UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!],
                     createdAt: .distantPast,
                     updatedAt: .distantPast
                 )
@@ -101,5 +145,8 @@ final class BackupArchiveTests: XCTestCase {
         XCTAssertEqual(decoded.manifest.counts.shows, 1)
         XCTAssertEqual(decoded.shows.first?.title, "Midnight Laughs")
         XCTAssertEqual(decoded.performers.first?.displayName, "Alex")
+        XCTAssertEqual(decoded.performers.first?.brandIDs.count, 1)
+        XCTAssertEqual(decoded.brands.first?.venueIDs.count, 1)
+        XCTAssertEqual(decoded.venues.first?.performerIDs.count, 1)
     }
 }

@@ -39,6 +39,7 @@ final class BackupZipCodecTests: XCTestCase {
                         normalizedKey: "alex",
                         stageName: nil,
                         avatarFileName: nil,
+                        brandIDs: [UUID(uuidString: "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC")!],
                         createdAt: .distantPast,
                         updatedAt: .distantPast
                     )
@@ -50,6 +51,8 @@ final class BackupZipCodecTests: XCTestCase {
                         normalizedKey: "comedy club",
                         cityName: "Shanghai",
                         accentColorHex: nil,
+                        performerIDs: [UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!],
+                        venueIDs: [UUID(uuidString: "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD")!],
                         createdAt: .distantPast,
                         updatedAt: .distantPast
                     )
@@ -63,6 +66,7 @@ final class BackupZipCodecTests: XCTestCase {
                         addressLine: nil,
                         district: nil,
                         cityName: "Shanghai",
+                        performerIDs: [UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!],
                         createdAt: .distantPast,
                         updatedAt: .distantPast
                     )

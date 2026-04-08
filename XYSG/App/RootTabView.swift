@@ -36,6 +36,7 @@ struct RootTabView: View {
             }
         }
         .task {
+            Haptics.prewarm()
             try? await Task.sleep(for: .milliseconds(1150))
             withAnimation(.easeInOut(duration: 0.45)) {
                 showsLaunchOverlay = false
