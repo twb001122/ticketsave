@@ -4,3 +4,9 @@ build/
 *.xcuserstate
 xcuserdata/
 .swiftpm/
+web/node_modules/
+web/dist/
+web/data/
+web/.env
+web/**/*.zip
+deployment/*.tar.gz
