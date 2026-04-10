@@ -1,6 +1,6 @@
-# Web Git 部署流程
+# Web 手动 Git 部署流程
 
-这个项目的 Web 端使用 GitHub Actions 自动部署到 1Panel 服务器。
+这个项目的 Web 端使用手动 Git 部署到 1Panel 服务器。流程是：本地开发并 push 到 GitHub，然后登录服务器执行 `git pull`、构建、重启 1Panel Node 运行环境。
 
 ## 日常开发
 
@@ -15,63 +15,84 @@
    ```
 
 4. 提交并 push 分支。
-5. 合并到 `main` 后，GitHub Actions 会自动部署到服务器。
+5. 合并到 `main` 后，登录服务器手动部署。
 
-## GitHub Secrets
+## 服务器首次准备
 
-在 GitHub 仓库的 `Settings > Secrets and variables > Actions` 里配置：
-
-```text
-DEPLOY_HOST=156.229.28.69
-DEPLOY_USER=root
-DEPLOY_PORT=22
-DEPLOY_PATH=/opt/xysg-web
-DEPLOY_CONTAINER=xysg-web
-DEPLOY_SSH_KEY=<部署专用 SSH 私钥>
-```
-
-如果服务器禁用了 root 登录，把 `DEPLOY_USER` 换成你实际使用的 SSH 用户，并确保它能写入 `/opt/xysg-web` 且能执行 `docker restart xysg-web`。
-
-## 服务器 SSH key
-
-建议生成一把只给 GitHub Actions 使用的部署 key：
+推荐在服务器上保留一个完整仓库目录：
 
 ```bash
-ssh-keygen -t ed25519 -C "github-actions-xysg-web" -f ~/.ssh/xysg_web_deploy
+cd /opt
+git clone https://github.com/twb001122/ticketsave.git ticketsave
+cd /opt/ticketsave
 ```
 
-把公钥内容加入服务器的：
+如果服务器已经有 `/opt/xysg-web/.env`，复制到新的仓库 Web 目录：
+
+```bash
+cp /opt/xysg-web/.env /opt/ticketsave/web/.env
+```
+
+然后在 1Panel 里把 Node 运行环境 `xysg-web` 的源码目录改成：
 
 ```text
-~/.ssh/authorized_keys
+/opt/ticketsave/web
 ```
 
-把私钥内容填入 GitHub Secret：
+如果 1Panel 不允许直接改源码目录，就重新创建一个 Node 运行环境，源码目录同样填 `/opt/ticketsave/web`，端口仍用 `3008`，容器名仍用 `xysg-web`。
+
+## 每次部署
+
+登录服务器后执行：
+
+```bash
+cd /opt/ticketsave
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+cd web
+npm ci
+npm run build
+docker restart xysg-web
+```
+
+如果你想先确认版本，可以在 `git pull` 后执行：
+
+```bash
+git log --oneline -1
+```
+
+## 服务器保留数据
+
+`.env` 留在服务器，不提交进 Git：
 
 ```text
-DEPLOY_SSH_KEY
+/opt/ticketsave/web/.env
 ```
 
-## 服务器保留文件
-
-自动部署会同步 `web/` 到 `/opt/xysg-web`，但不会覆盖：
-
-```text
-/opt/xysg-web/.env
-/opt/xysg-web/node_modules
-/opt/xysg-web/data
-```
-
-线上数据目录也不在 Git 部署范围内：
+线上数据目录由 `.env` 的 `DATA_DIR` 指向，不在 Git 仓库里：
 
 ```text
 /www/wwwroot/xysg-data
 ```
 
-## 手动触发
-
-GitHub Actions 支持 `workflow_dispatch`。如果需要手动重新部署，可以在 GitHub 的 `Actions > Deploy Web > Run workflow` 里选择 `main` 后运行。
-
 ## 回滚
 
-回滚代码时，把 `main` 回退到上一个正常 commit，然后重新触发 `Deploy Web`。数据库和 `.env` 不会被部署覆盖。
+在服务器仓库里查看最近提交：
+
+```bash
+cd /opt/ticketsave
+git log --oneline -5
+```
+
+回到指定版本：
+
+```bash
+git checkout <commit-sha>
+cd web
+npm ci
+npm run build
+docker restart xysg-web
+```
+
+确认恢复后，再决定是否把 GitHub 的 `main` 回退到对应版本。数据库和 `.env` 不会被 Git 操作覆盖。
